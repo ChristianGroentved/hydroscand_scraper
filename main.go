@@ -10,23 +10,19 @@ import (
 
 // initializing a data structure to keep the scraped data
 type Product struct {
-	url         string
-	category    string
-	subCategory string
-	productType string
-	name        string
-}
-
-type Category struct {
-	category    string
-	subCategory string
-	productType string
+	URL         string
+	Category    string
+	SubCategory string
+	ProductType string
+	Name        string
+	Attributes  map[string]string
+	Variants    map[string]string
 }
 
 func main() {
 
 	// initializing the slice of structs to store the data to scrape
-	var Products []Product
+	var products []Product
 
 	c := colly.NewCollector(colly.AllowedDomains("www.hydroscand.dk"))
 
@@ -49,20 +45,36 @@ func main() {
 	detailCollector.OnHTML("div.product-info-wrapper", func(e *colly.HTMLElement) {
 		log.Println("Product description found", e.Request.URL)
 
-		fmt.Println(e.ChildText("h1.page-title > span.base"))
+		product := Product{URL: e.Request.URL.String()}
+		product.Name = e.ChildText("h1.page-title > span.base")
+		product.Attributes = make(map[string]string)
+		product.Variants = make(map[string]string)
+
+		// fmt.Println(e.ChildText("h1.page-title > span.base"))
 
 		// Extract the details of the product
 		e.ForEach("table.data.table.additional-attributes:not(#product-attribute-specs-table) tr", func(_ int, el *colly.HTMLElement) {
-			fmt.Println(el.ChildText("th"), ":", el.ChildText("td"))
+			key := el.ChildText("th")
+			val := el.ChildText("td")
+			// fmt.Println(el.ChildText("th"), ":", el.ChildText("td"))
+
+			product.Attributes[key] = val
 
 		})
 
 		e.ForEach("div.product-variants table.table td", func(_ int, el *colly.HTMLElement) {
-			fmt.Println(el.Attr("data-th"), ":", strings.TrimSpace(el.Text))
+			key := el.Attr("data-th")
+			value := strings.TrimSpace(el.Text)
+			// fmt.Println(el.Attr("data-th"), ":", strings.TrimSpace(el.Text))
+			product.Variants[key] = value
 		})
 
-	})
-	c.Visit("https://www.hydroscand.dk/dk_dk/produkter")
+		products = append(products, product)
 
-	fmt.Printf("+%v", Products)
+	})
+	c.Visit("https://www.hydroscand.dk/dk_dk/produkter/adaptere/bsp-koblinger-og-adaptere/bsp-lige")
+
+	for _, p := range products {
+		fmt.Printf("Product: %+v\n", p)
+	}
 }
