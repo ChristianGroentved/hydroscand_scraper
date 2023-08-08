@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/gocolly/colly"
 )
@@ -58,7 +59,7 @@ func main() {
 		})
 
 		e.ForEach("div.product-variants table.table td", func(_ int, el *colly.HTMLElement) {
-			fmt.Println(el.Attr("data-th"), ":", el.Text)
+			fmt.Println(el.Attr("data-th"), ":", strings.TrimSpace(el.Text))
 		})
 
 	})
