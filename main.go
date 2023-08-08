@@ -2,13 +2,25 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/gocolly/colly"
 )
 
 // initializing a data structure to keep the scraped data
 type Product struct {
-	url, name string
+	url         string
+	category    string
+	subCategory string
+	productType string
+	name        string
+}
+
+type Category struct {
+	url         string
+	category    string
+	subCategory string
+	productType string
 }
 
 func main() {
@@ -23,15 +35,33 @@ func main() {
 
 	// scraping logic
 	c.OnHTML("li.sub-categories__item", func(e *colly.HTMLElement) {
-		Product := Product{}
+
 		fmt.Println(e.ChildAttr("a", "title"))
 		link := e.ChildAttr("a", "href")
 		e.Request.Visit(link)
-		Product.name = e.ChildAttr("a", "title")
-
-		Products = append(Products, Product)
 	})
 
+	c.OnHTML("a.product-item-link", func(e *colly.HTMLElement) {
+		detailsLink := e.Attr("href")
+		detailCollector.Visit(detailsLink)
+	})
+
+	detailCollector.OnHTML("div.product-info-wrapper", func(e *colly.HTMLElement) {
+		log.Println("Product description found", e.Request.URL)
+
+		fmt.Println(e.ChildText("h1.page-title > span.base"))
+
+		// Extract the details of the product
+		e.ForEach("table.additional-attributes tr", func(_ int, el *colly.HTMLElement) {
+			fmt.Println(el.ChildText("th"), ":", el.ChildText("td"))
+
+		})
+
+		e.ForEach("div.product-variants table.table td", func(_ int, el *colly.HTMLElement) {
+			fmt.Println(el.Attr("data-th"), ":", el.Text)
+		})
+
+	})
 	c.Visit("https://www.hydroscand.dk/dk_dk/produkter")
 
 	fmt.Printf("+%v", Products)
