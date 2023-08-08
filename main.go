@@ -18,7 +18,6 @@ type Product struct {
 }
 
 type Category struct {
-	url         string
 	category    string
 	subCategory string
 	productType string
@@ -53,7 +52,7 @@ func main() {
 		fmt.Println(e.ChildText("h1.page-title > span.base"))
 
 		// Extract the details of the product
-		e.ForEach("table.additional-attributes tr", func(_ int, el *colly.HTMLElement) {
+		e.ForEach("table.data.table.additional-attributes:not(#product-attribute-specs-table) tr", func(_ int, el *colly.HTMLElement) {
 			fmt.Println(el.ChildText("th"), ":", el.ChildText("td"))
 
 		})
