@@ -10,13 +10,15 @@ import (
 
 // initializing a data structure to keep the scraped data
 type Product struct {
-	URL         string
-	Category    string
-	SubCategory string
-	ProductType string
-	Name        string
-	Attributes  map[string]string
-	Variants    map[string]string
+	URL        string
+	Name       string
+	Attributes map[string]string
+	Variants   map[string]string
+}
+
+type Hierachy struct {
+	Category map[string]string
+	URL      string
 }
 
 func main() {
