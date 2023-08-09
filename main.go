@@ -55,13 +55,10 @@ func main() {
 		product.Attributes = make(map[string]string)
 		product.Variants = make(map[string]string)
 
-		// fmt.Println(e.ChildText("h1.page-title > span.base"))
-
 		// Extract the details of the product
 		e.ForEach("table.data.table.additional-attributes:not(#product-attribute-specs-table) tr", func(_ int, el *colly.HTMLElement) {
 			key := el.ChildText("th")
 			val := el.ChildText("td")
-			// fmt.Println(el.ChildText("th"), ":", el.ChildText("td"))
 
 			product.Attributes[key] = val
 
@@ -70,7 +67,6 @@ func main() {
 		e.ForEach("div.product-variants table.table td", func(_ int, el *colly.HTMLElement) {
 			key := el.Attr("data-th")
 			value := strings.TrimSpace(el.Text)
-			// fmt.Println(el.Attr("data-th"), ":", strings.TrimSpace(el.Text))
 			product.Variants[key] = value
 		})
 
