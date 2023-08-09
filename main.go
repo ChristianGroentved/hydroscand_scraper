@@ -31,10 +31,15 @@ func main() {
 
 	// scraping logic
 	c.OnHTML("li.sub-categories__item", func(e *colly.HTMLElement) {
-
-		fmt.Println(e.ChildAttr("a", "title"))
 		link := e.ChildAttr("a", "href")
 		e.Request.Visit(link)
+	})
+
+	c.OnHTML("div.breadcrumbs", func(e *colly.HTMLElement) {
+		e.ForEach("li[class*=cat]", func(_ int, el *colly.HTMLElement) {
+			fmt.Println(strings.TrimSpace(el.Text))
+		})
+
 	})
 
 	c.OnHTML("a.product-item-link", func(e *colly.HTMLElement) {
@@ -72,7 +77,7 @@ func main() {
 		products = append(products, product)
 
 	})
-	c.Visit("https://www.hydroscand.dk/dk_dk/produkter/adaptere/bsp-koblinger-og-adaptere/bsp-lige")
+	c.Visit("https://www.hydroscand.dk/dk_dk/produkter")
 
 	for _, p := range products {
 		fmt.Printf("Product: %+v\n", p)
