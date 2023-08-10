@@ -18,6 +18,7 @@ type ProductDetails struct {
 type ProductAttribute struct {
 	URL       string            `json:"url"`
 	Name      string            `json:"name"`
+	ImageURL  string            `json:"image_url"`
 	Attribute map[string]string `json:"attribute"`
 }
 
@@ -79,6 +80,7 @@ func scrape() ([]Hierachy, []ProductAttribute, []ProductDetails) {
 
 		productAttributes := ProductAttribute{URL: e.Request.URL.String()}
 		productAttributes.Name = e.ChildText("h1.page-title > span.base")
+		productAttributes.ImageURL = e.ChildAttr("img", "src")
 		productAttributes.Attribute = make(map[string]string)
 
 		product := ProductDetails{URL: e.Request.URL.String()}
