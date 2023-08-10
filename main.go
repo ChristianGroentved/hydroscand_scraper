@@ -25,6 +25,7 @@ func main() {
 
 	// initializing the slice of structs to store the data to scrape
 	var products []Product
+	var hierarchies []Hierachy
 
 	c := colly.NewCollector(colly.AllowedDomains("www.hydroscand.dk"))
 
@@ -37,16 +38,28 @@ func main() {
 		e.Request.Visit(link)
 	})
 
-	c.OnHTML("div.breadcrumbs", func(e *colly.HTMLElement) {
-		e.ForEach("li[class*=cat]", func(_ int, el *colly.HTMLElement) {
-			fmt.Println(strings.TrimSpace(el.Text))
+	c.OnHTML("div.page-wrapper", func(e *colly.HTMLElement) {
+
+		hierachy := Hierachy{}
+		hierachy.Category = make(map[string]string)
+		levels := 0
+
+		e.ForEach("div.breadcrumbs li[class*=cat]", func(_ int, el *colly.HTMLElement) {
+
+			hierachy.Category[fmt.Sprintf("Category_%v", levels)] = strings.TrimSpace(el.Text)
+			levels++
+
 		})
 
-	})
+		c.OnHTML("a.product-item-link", func(e *colly.HTMLElement) {
 
-	c.OnHTML("a.product-item-link", func(e *colly.HTMLElement) {
-		detailsLink := e.Attr("href")
-		detailCollector.Visit(detailsLink)
+			detailsLink := e.Attr("href")
+
+			hierachy.URL = detailsLink
+			hierarchies = append(hierarchies, hierachy)
+			detailCollector.Visit(detailsLink)
+		})
+
 	})
 
 	detailCollector.OnHTML("div.product-info-wrapper", func(e *colly.HTMLElement) {
@@ -75,7 +88,11 @@ func main() {
 		products = append(products, product)
 
 	})
-	c.Visit("https://www.hydroscand.dk/dk_dk/produkter")
+	c.Visit("https://www.hydroscand.dk/dk_dk/produkter/adaptere/bsp-koblinger-og-adaptere")
+
+	for _, h := range hierarchies {
+		fmt.Printf("Hierachy: %+v\n", h)
+	}
 
 	for _, p := range products {
 		fmt.Printf("Product: %+v\n", p)
