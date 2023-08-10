@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gocolly/colly"
+	"github.com/gocolly/colly/extensions"
 )
 
 // initializing a data structure to keep the scraped data
@@ -31,9 +32,13 @@ func scrape() ([]Hierachy, []ProductAttribute, []ProductDetails) {
 	var hierarchies []Hierachy
 
 	c := colly.NewCollector(colly.AllowedDomains("www.hydroscand.dk"))
+	// Add Random User Agents
+	extensions.RandomUserAgent(c)
 
 	// Create another collector to scrape product details
 	detailCollector := c.Clone()
+	// Add Random User Agents
+	extensions.RandomUserAgent(detailCollector)
 
 	// Callback to find the links to the products on the page
 	c.OnHTML("li.sub-categories__item", func(e *colly.HTMLElement) {
